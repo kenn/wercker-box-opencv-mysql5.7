@@ -1,0 +1,33 @@
+name: OpenCV + MySQL 5.7 + RVM
+version: 0.1.0
+inherits: wercker/rvm@8.0.0
+type: service
+platform: ubuntu@14.04
+description: Service for OpenCV + MySQL 5.7 + RVM
+keywords:
+  - opencv
+  - mysql
+  - rvm
+script: |
+  DEBIAN_FRONTEND=noninteractive
+  wget http://dev.mysql.com/get/mysql-apt-config_0.7.2-1_all.deb
+  sudo dpkg -i mysql-apt-config_0.7.2-1_all.deb
+  sudo apt-get -y update
+  sudo apt-get -y install libopencv-dev
+  sudo apt-get -y install mysql-server-5.7 libmysqlclient-dev
+env:
+  WERCKER_MYSQL_USERNAME: wercker
+  WERCKER_MYSQL_PASSWORD: wercker
+  WERCKER_MYSQL_HOST: $$HOST$$
+  WERCKER_MYSQL_PORT: 3306
+  WERCKER_MYSQL_DATABASE: werckerdb1
+  WERCKER_MYSQL_URL: mysql://wercker:wercker@$$HOST$$:3306/werckerdb1
+init-script: |
+  sudo stop mysql
+  sudo mkdir /tmp/ramdisk
+  sudo mount -t tmpfs -o size=128M tmpfs /tmp/ramdisk/
+  sudo mv /var/lib/mysql /tmp/ramdisk/mysql
+  sudo ln -s /tmp/ramdisk/mysql/ /var/lib/mysql
+  sudo chmod -R 700 /var/lib/mysql
+  sudo chown -R mysql:mysql /var/lib/mysql
+  sudo start mysql
